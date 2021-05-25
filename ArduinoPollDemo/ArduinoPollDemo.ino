@@ -2,6 +2,21 @@
 #define RXD2 16
 #define TXD2 17
 
+
+/*
+The function send_cmd will send to the supplied inverter ID and wait for up to 100ms for an answer, 
+
+The CMD is as followed:
+
+0xC0 (cmd1 = 0) = Poll Inverter status, like voltage power etc.
+
+0xC1 (cmd1 = 1) = Turn inverter ON
+0xC1 (cmd1 = 2) = Turn inverter OFF
+0xC1 (cmd1 = 3) = Reboot inverter
+
+0xC3 (cmd1 1-100) = Set the PowerGrade of the Inverter
+*/
+
 uint8_t rx_buffer[50] = {0};
 
 void setup() {
