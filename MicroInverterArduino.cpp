@@ -2,7 +2,11 @@
 
 #include "MicroInverterArduino.h"
 
-MicroInverterArduino::MicroInverterArduino(Stream& stream) : mStream(stream) { }
+MicroInverterArduino::MicroInverterArduino(Stream& stream, const uint8_t progPin) : mStream(stream), mProgPin(progPin)
+{
+    pinMode(mProgPin, OUTPUT);
+    disableProgramming();
+}
 
 MicroInverterArduino::~MicroInverterArduino() { }
 
@@ -92,4 +96,14 @@ uint8_t MicroInverterArduino::calcCRC() const
         crc += mBuffer[i];
     }
     return crc;
+}
+
+void MicroInverterArduino::enableProgramming()
+{
+    digitalWrite(mProgPin, LOW);
+}
+
+void MicroInverterArduino::disableProgramming()
+{
+    digitalWrite(mProgPin, HIGH);
 }

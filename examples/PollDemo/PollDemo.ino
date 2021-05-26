@@ -1,9 +1,10 @@
 #include "MicroInverterArduino.h"
 
+constexpr const uint8_t PROG_PIN = 4;
 constexpr const uint8_t RX_PIN = 16;
 constexpr const uint8_t TX_PIN = 17;
 
-MicroInverterArduino inverter(Serial2);
+MicroInverterArduino inverter(Serial2, PROG_PIN);
 
 void setup()
 {

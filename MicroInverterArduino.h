@@ -32,7 +32,8 @@ public:
     /// @brief Construct a new Micro Inverter Arduino object
     ///
     /// @param stream Stream to communicate with the wireless module
-    MicroInverterArduino(Stream& stream);
+    /// @param progPin Programming enable pin of wireless module (active low)
+    MicroInverterArduino(Stream& stream, const uint8_t progPin);
 
     /// @brief Destroy the Micro Inverter Arduino object
     ~MicroInverterArduino();
@@ -72,7 +73,14 @@ private:
     /// @return uint8_t CRC
     uint8_t calcCRC() const;
 
+    /// @brief Enable programming mode of the wireless module
+    void enableProgramming();
+
+    /// @brief Disable programming mode of the wireless module
+    void disableProgramming();
+
 private:
     Stream& mStream; /// Stream for communication
+    uint8_t mProgPin; /// Programming enable pin of wireless module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer
 };
