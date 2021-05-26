@@ -10,7 +10,7 @@ MicroInverterArduino::Status MicroInverterArduino::getStatus(const uint32_t devi
 {
     sendCommand(Command::STATUS, 0x00, deviceID);
     Status status;
-    if (waitForAnswer(26)) // command == Command::STATUS ? 26 : 14
+    if (waitForAnswer(27)) // command == Command::STATUS ? 27 : 15
     {
         status.valid = true;
 
