@@ -4,17 +4,17 @@
 
 
 /*
-The function send_cmd will send to the supplied inverter ID and wait for up to 100ms for an answer, 
+  The function send_cmd will send to the supplied inverter ID and wait for up to 100ms for an answer,
 
-The CMD is as followed:
+  The CMD is as followed:
 
-0xC0 (cmd1 = 0) = Poll Inverter status, like voltage power etc.
+  0xC0 (cmd1 = 0) = Poll Inverter status, like voltage power etc.
 
-0xC1 (cmd1 = 1) = Turn inverter ON
-0xC1 (cmd1 = 2) = Turn inverter OFF
-0xC1 (cmd1 = 3) = Reboot inverter
+  0xC1 (cmd1 = 1) = Turn inverter ON
+  0xC1 (cmd1 = 2) = Turn inverter OFF
+  0xC1 (cmd1 = 3) = Reboot inverter
 
-0xC3 (cmd1 1-100) = Set the PowerGrade of the Inverter
+  0xC3 (cmd1 1-100) = Set the PowerGrade of the Inverter
 */
 
 uint8_t rx_buffer[50] = {0};
@@ -27,6 +27,8 @@ void setup() {
   digitalWrite(prog_pin, HIGH);
   delay(1000);
   Serial.println("Welcome to Micro Inverter Interface By ATCnetz.de");
+
+  read_rf_setting();
 }
 
 long last_send = 0;
@@ -113,10 +115,10 @@ bool wait_for_answer(uint8_t cmd) {
   while (millis() - start_time < 100 && rx_pos <= expected_len) {
     if (Serial2.available()) {
       rx_buffer[rx_pos++] = Serial2.read();
-     /* Serial.print("Received one pos:");
-      Serial.print(rx_pos - 1);
-      Serial.print(" buff 0x");
-      Serial.println(rx_buffer[rx_pos - 1], HEX);*/
+      /* Serial.print("Received one pos:");
+        Serial.print(rx_pos - 1);
+        Serial.print(" buff 0x");
+        Serial.println(rx_buffer[rx_pos - 1], HEX);*/
       if (rx_pos > expected_len) {
         while (Serial2.available())Serial2.read();
         return true;
@@ -125,4 +127,30 @@ bool wait_for_answer(uint8_t cmd) {
   }
   while (Serial2.available())Serial2.read();
   return false;
+}
+
+void read_rf_setting() {
+  uint8_t req_cmd[] = {0xAA, 0x5C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x18};
+
+  digitalWrite(prog_pin, LOW);
+  delay(1000);
+  Serial.println("Writing_settings_req:");
+  for (int posi = 0; posi < sizeof(req_cmd); posi++) {
+    Serial2.write(req_cmd[posi]);
+    Serial.print(req_cmd[posi], HEX);
+  }
+  Serial.println("");
+  long start_time = millis();
+  Serial.println("Reading_settings:");
+  while (millis() - start_time < 1000) {
+    while (Serial2.available()) {
+
+      Serial.print(" 0x");
+      Serial.print(Serial2.read(), HEX);
+    }
+  }
+  Serial.println("");
+
+  digitalWrite(prog_pin, HIGH);
+  delay(500);
 }
