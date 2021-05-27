@@ -75,13 +75,12 @@ public:
     {
         uint32_t deviceID; /// Unique inverter identifier
 
-        int state; /// Inverter state (not reversed)
-        int powerGrade; /// Power grade (not reversed)
-
-        int totalGeneratedPower; /// Total generated power (kWh? not reversed)
-        int temperature; /// Inverter temperature (not reversed)
+        uint8_t state; /// Inverter state (not reversed)
+        uint8_t temperature; /// Inverter temperature (not reversed)
 
         bool valid; /// Validity of the contained data
+
+        float totalGeneratedPower; /// Total generated power (kWh? not reversed)
 
         float dcVoltage; /// DC voltage in Volts (panel voltage)
         float dcCurrent; /// DC current in Amperes (panel current)

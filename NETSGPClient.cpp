@@ -21,8 +21,10 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 
         status.deviceID = mBuffer[6] << 24 | mBuffer[7] << 16 | mBuffer[8] << 8 | (mBuffer[9] & 0xFF);
 
-        status.state = 0; // not reversed
-        status.powerGrade = 0; // not reversed
+        status.totalGeneratedPower
+            = static_cast<float>(mBuffer[10] << 24 | mBuffer[11] << 16 | mBuffer[12] << 8 | (mBuffer[13] & 0xFF));
+
+        // CRC = mBuffer[14]
 
         status.dcVoltage = (mBuffer[15] << 8 | mBuffer[16]) / 100;
         status.dcCurrent = (mBuffer[17] << 8 | mBuffer[18]) / 100;
@@ -32,8 +34,8 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
         status.acCurrent = (mBuffer[21] << 8 | mBuffer[22]) / 100;
         status.acPower = status.acVoltage * status.acCurrent;
 
-        status.totalGeneratedPower = 0; // not reversed
-        status.temperature = mBuffer[26]; // not reversed
+        status.state = mBuffer[25]; // not fully reversed
+        status.temperature = mBuffer[26]; // not fully reversed
     }
     else
     {
