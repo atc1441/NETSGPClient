@@ -12,6 +12,7 @@ MicroInverterArduino::~MicroInverterArduino() { }
 
 MicroInverterArduino::Status MicroInverterArduino::getStatus(const uint32_t deviceID)
 {
+    flushRX(); // Need to flush RX now to make sure it is empty for waitForAnswer()
     sendCommand(Command::STATUS, 0x00, deviceID);
     Status status;
     if (waitForAnswer(27)) // command == Command::STATUS ? 27 : 15
@@ -67,24 +68,14 @@ void MicroInverterArduino::sendCommand(const Command command, const uint8_t valu
 bool MicroInverterArduino::waitForAnswer(const size_t expectedSize)
 {
     const uint32_t startTime = millis();
-    while (millis() - startTime < 100 && !mStream.available())
+    while (millis() - startTime < 100)
     {
+        if (mStream.available())
+        {
+            return mStream.readBytes(&mBuffer[0], expectedSize) == expectedSize;
+        }
         delay(1);
     }
-
-    const int available = mStream.available();
-    if (available)
-    {
-        const size_t read = mStream.readBytes(&mBuffer[0], expectedSize);
-
-        while (mStream.available())
-        {
-            mStream.read();
-        }
-
-        return read == expectedSize;
-    }
-
     return false;
 }
 
@@ -106,4 +97,9 @@ void MicroInverterArduino::enableProgramming()
 void MicroInverterArduino::disableProgramming()
 {
     digitalWrite(mProgPin, HIGH);
+}
+
+void MicroInverterArduino::flushRX()
+{
+    while (mStream.read() != -1) { }
 }

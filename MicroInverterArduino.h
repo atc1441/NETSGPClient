@@ -79,6 +79,9 @@ private:
     /// @brief Disable programming mode of the wireless module
     void disableProgramming();
 
+    /// @brief Flush the receive buffer of the stream
+    void flushRX();
+
 private:
     Stream& mStream; /// Stream for communication
     uint8_t mProgPin; /// Programming enable pin of wireless module (active low)
