@@ -2,6 +2,70 @@
 
 #include <Stream.h>
 
+/// @brief LC12S 2.4GHz RF module specific stuff
+namespace LC12S
+{
+    /// @brief RF power setting in dBm
+    enum RFPower
+    {
+        DBM_12 = 0, // 12 dBm
+        DBM_10 = 1, // 10 dBm
+        DBM_09 = 2, //  9 dBm
+        DBM_08 = 3, //  8 dBm
+        DBM_06 = 4, //  6 dBm
+        DBM_03 = 5, //  3 dBm
+        DBM_00 = 6, //  0 dBm
+        DBM_N_02 = 7, //   -2 dBm
+        DBM_N_05 = 8, //   -5 dBm
+        DBM_N_10 = 9, //  -10 dBm
+        DBM_N_15 = 10, // -15 dBm
+        DBM_N_20 = 11, // -20 dBm
+        DBM_N_25 = 12, // -25 dBm
+        DBM_N_30 = 13, // -30 dBm
+        DBM_N_35 = 14, // -35 dBm
+    };
+
+    /// @brief Baudrate setting in baud
+    enum Baudrate
+    {
+        BPS_600 = 0,
+        BPS_1200 = 1,
+        BPS_2400 = 2,
+        BPS_4800 = 3,
+        BPS_9600 = 4,
+        BPS_19200 = 5,
+        BPS_38400 = 6,
+    };
+
+    /// @brief LC12S module settings
+    struct Settings
+    {
+        uint16_t moduleID; /// Module identifier
+        uint16_t networkID; /// Network identifier
+        LC12S::RFPower rfPower; /// RF power
+        LC12S::Baudrate baudrate; /// Baudrate
+        uint8_t rfChannel; /// RF channel
+        bool valid; /// Is this settings object valid (true) or not (false)
+
+        bool operator==(const Settings& rhs) const
+        {
+            return moduleID == rhs.moduleID && networkID == rhs.networkID && rfPower == rhs.rfPower
+                && baudrate == rhs.baudrate && rfChannel == rhs.rfChannel && valid == rhs.valid;
+        }
+        bool operator!=(const Settings& rhs) const { return !operator==(rhs); }
+    };
+
+    constexpr const Settings DEFAULT_SETTINGS = {
+        .moduleID = 0x58AF,
+        .networkID = 0x0000,
+        .rfPower = RFPower::DBM_12,
+        .baudrate = Baudrate::BPS_9600,
+        .rfChannel = 0x64,
+        .valid = true,
+    };
+
+} // namespace LC12S
+
 /// @brief Class for micro inverter communication
 class NETSGPClient
 {
@@ -29,21 +93,39 @@ public:
     };
 
 public:
-    /// @brief Construct a new NETSGPClient object
+    /// @brief Construct a new NETSGPClient object.
     ///
-    /// @param stream Stream to communicate with the wireless module
-    /// @param progPin Programming enable pin of wireless module (active low)
+    /// @param stream Stream to communicate with the RF module
+    /// @param progPin Programming enable pin of RF module (active low)
     NETSGPClient(Stream& stream, const uint8_t progPin);
 
     /// @brief Destroy the NETSGPClient object
     ~NETSGPClient();
 
-    /// @brief Get the status of the given device
+    /// @brief Get the status of the given device.
     ///
     /// @param deviceID Unique device identifier
     /// @return InverterStatus Status of the inverter (InverterStatus.valid == true) or empty status
     /// (InverterStatus.valid == false)
     InverterStatus getStatus(const uint32_t deviceID);
+
+    /// @brief Read the settings of the RF module
+    LC12S::Settings readRFModuleSettings();
+
+    /// @brief Change the settings of the RF module to the provided ones.
+    ///
+    /// @param settings Settings to write to the RF module
+    /// @return true If settings were written successfully
+    /// @return false If not
+    bool writeRFModuleSettings(const LC12S::Settings& settings);
+
+    /// @brief Set the RF module to its default settings if needed.
+    ///
+    /// This function will read the RF module settings and then compare these with the default ones and if they
+    /// mismatch will write the default config
+    /// @return true If settings are correct or written successfully
+    /// @return false If settings could not be written
+    bool setDefaultRFSettings();
 
 private:
     /// @brief All known commands
@@ -55,36 +137,41 @@ private:
     };
 
 private:
-    /// @brief Send a specific command to a specific inverter with a specific value
+    /// @brief Send a specific command to a specific inverter with a specific value.
     ///
     /// @param command Command to send
     /// @param value Value to send
     /// @param deviceID Recipient inverter identifier
     void sendCommand(const Command command, const uint8_t value, const uint32_t deviceID);
 
-    /// @brief Wait for an answer with the given expected size
+    /// @brief Wait for an answer with the given expected size.
     ///
     /// @param expectedSize Expected answer size in bytes
     /// @return true If an answer with correct lenght was received
     /// @return false If not
     bool waitForAnswer(const size_t expectedSize);
 
-    /// @brief Calculate the checksum for a message inside the buffer
+    /// @brief Calculate the checksum for a message inside the buffer.
     ///
+    /// @param bytes The amount of bytes to calculate the checksum for
     /// @return uint8_t CRC
-    uint8_t calcCRC() const;
+    uint8_t calcCRC(const size_t bytes) const;
 
-    /// @brief Enable programming mode of the wireless module
+    /// @brief Enable programming mode of the RF module.
+    ///
+    /// This function will delay code execution for 400ms
     void enableProgramming();
 
-    /// @brief Disable programming mode of the wireless module
+    /// @brief Disable programming mode of the RF module.
+    ///
+    /// This function will delay code execution for 10ms
     void disableProgramming();
 
-    /// @brief Flush the receive buffer of the stream
+    /// @brief Flush the receive buffer of the stream.
     void flushRX();
 
 private:
     Stream& mStream; /// Stream for communication
-    uint8_t mProgPin; /// Programming enable pin of wireless module (active low)
+    uint8_t mProgPin; /// Programming enable pin of RF module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer
 };

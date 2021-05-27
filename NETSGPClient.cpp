@@ -42,6 +42,96 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
     return status;
 }
 
+LC12S::Settings NETSGPClient::readRFModuleSettings()
+{
+    uint8_t* bufferPointer = &mBuffer[0];
+
+    *bufferPointer++ = 0xAA; // command byte
+    *bufferPointer++ = 0x5C; // command byte
+    *bufferPointer++ = 0x00; // module identifier
+    *bufferPointer++ = 0x00; // module identifier
+    *bufferPointer++ = 0x00; // networking identifier
+    *bufferPointer++ = 0x00; // networking identifier
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // RF power
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // Baudrate
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // RF channel (0 - 127)
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x12; // Length
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x18; // Checksum
+
+    enableProgramming();
+
+    mStream.write(&mBuffer[0], 18);
+    const size_t read = mStream.readBytes(&mBuffer[0], 18);
+
+    disableProgramming();
+
+    LC12S::Settings settings;
+    if (read == 18 && mBuffer[0] == 0xAA && mBuffer[1] == 0x5D && mBuffer[17] == calcCRC(17))
+    {
+        settings.valid = true;
+
+        settings.moduleID = mBuffer[2] << 8 | (mBuffer[3] & 0xFF);
+        settings.networkID = mBuffer[4] << 8 | (mBuffer[5] & 0xFF);
+        settings.rfPower = static_cast<LC12S::RFPower>(mBuffer[7]);
+        settings.baudrate = static_cast<LC12S::Baudrate>(mBuffer[9]);
+        settings.rfChannel = mBuffer[11];
+    }
+    else
+    {
+        settings.valid = false;
+    }
+    return settings;
+}
+
+bool NETSGPClient::writeRFModuleSettings(const LC12S::Settings& settings)
+{
+    uint8_t* bufferPointer = &mBuffer[0];
+
+    *bufferPointer++ = 0xAA; // command byte
+    *bufferPointer++ = 0x5A; // command byte
+    *bufferPointer++ = (settings.moduleID >> 8) & 0xFF; // module identifier
+    *bufferPointer++ = settings.moduleID & 0xFF; // module identifier
+    *bufferPointer++ = (settings.networkID >> 8) & 0xFF; // networking identifier
+    *bufferPointer++ = settings.networkID & 0xFF; // networking identifier
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = settings.rfPower; // RF power
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = settings.baudrate; // Baudrate
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = settings.rfChannel; // RF channel (0 - 127)
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = 0x12; // Length
+    *bufferPointer++ = 0x00; // NC must be 0
+    *bufferPointer++ = calcCRC(16); // Checksum, we can calc for 16 bytes since 17th one is 0
+
+    enableProgramming();
+
+    mStream.write(&mBuffer[0], 18);
+    const size_t read = mStream.readBytes(&mBuffer[0], 18);
+
+    disableProgramming();
+
+    return read == 18 && mBuffer[0] == 0xAA && mBuffer[1] == 0x5B && mBuffer[17] == calcCRC(17);
+}
+
+bool NETSGPClient::setDefaultRFSettings()
+{
+    if (readRFModuleSettings() != LC12S::DEFAULT_SETTINGS)
+    {
+        return writeRFModuleSettings(LC12S::DEFAULT_SETTINGS);
+    }
+    return true;
+}
+
 void NETSGPClient::sendCommand(const Command command, const uint8_t value, const uint32_t deviceID)
 {
     uint8_t* bufferPointer = &mBuffer[0];
@@ -60,7 +150,7 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
     *bufferPointer++ = 0x00;
     *bufferPointer++ = 0x00;
     *bufferPointer++ = value;
-    *bufferPointer++ = calcCRC();
+    *bufferPointer++ = calcCRC(14);
 
     mStream.write(&mBuffer[0], 15);
 }
@@ -79,10 +169,10 @@ bool NETSGPClient::waitForAnswer(const size_t expectedSize)
     return false;
 }
 
-uint8_t NETSGPClient::calcCRC() const
+uint8_t NETSGPClient::calcCRC(const size_t bytes) const
 {
     uint8_t crc = 0;
-    for (int i = 0; i < 14; ++i)
+    for (size_t i = 0; i < bytes; ++i)
     {
         crc += mBuffer[i];
     }
@@ -92,11 +182,13 @@ uint8_t NETSGPClient::calcCRC() const
 void NETSGPClient::enableProgramming()
 {
     digitalWrite(mProgPin, LOW);
+    delay(400);
 }
 
 void NETSGPClient::disableProgramming()
 {
     digitalWrite(mProgPin, HIGH);
+    delay(10);
 }
 
 void NETSGPClient::flushRX()

@@ -13,9 +13,15 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     delay(1000);
     Serial.println("Welcome to Micro Inverter Interface by ATCnetz.de and enwi");
+
+    // Make sure the RF module is set to the correct settings
+    if (!client.setDefaultRFSettings())
+    {
+        Serial.println("Could not set RF module to default settings");
+    }
 }
 
-long lastSendMillis = 0;
+uint32_t lastSendMillis = 0;
 void loop()
 {
     const uint32_t currentMillis = millis();
