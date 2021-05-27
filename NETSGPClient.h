@@ -3,11 +3,11 @@
 #include <Stream.h>
 
 /// @brief Class for micro inverter communication
-class MicroInverterArduino
+class NETSGPClient
 {
 public:
     /// @brief Contains status information of a specific inverter
-    struct Status
+    struct InverterStatus
     {
         uint32_t deviceID; /// Unique inverter identifier
 
@@ -29,20 +29,21 @@ public:
     };
 
 public:
-    /// @brief Construct a new Micro Inverter Arduino object
+    /// @brief Construct a new NETSGPClient object
     ///
     /// @param stream Stream to communicate with the wireless module
     /// @param progPin Programming enable pin of wireless module (active low)
-    MicroInverterArduino(Stream& stream, const uint8_t progPin);
+    NETSGPClient(Stream& stream, const uint8_t progPin);
 
-    /// @brief Destroy the Micro Inverter Arduino object
-    ~MicroInverterArduino();
+    /// @brief Destroy the NETSGPClient object
+    ~NETSGPClient();
 
     /// @brief Get the status of the given device
     ///
     /// @param deviceID Unique device identifier
-    /// @return Status of the device (Status.valid == true) or empty status (Status.valid == false)
-    Status getStatus(const uint32_t deviceID);
+    /// @return InverterStatus Status of the inverter (InverterStatus.valid == true) or empty status
+    /// (InverterStatus.valid == false)
+    InverterStatus getStatus(const uint32_t deviceID);
 
 private:
     /// @brief All known commands

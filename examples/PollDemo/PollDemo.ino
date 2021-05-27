@@ -1,10 +1,10 @@
-#include "MicroInverterArduino.h"
+#include "NETSGPClient.h"
 
 constexpr const uint8_t PROG_PIN = 4;
 constexpr const uint8_t RX_PIN = 16;
 constexpr const uint8_t TX_PIN = 17;
 
-MicroInverterArduino inverter(Serial2, PROG_PIN);
+NETSGPClient client(Serial2, PROG_PIN);
 
 void setup()
 {
@@ -27,7 +27,7 @@ void loop()
         Serial.println("");
         Serial.println("Sending request now");
 
-        const MicroInverterArduino::Status status = inverter.getStatus(0x11002793);
+        const NETSGPClient::InverterStatus status = client.getStatus(0x11002793);
         if (status.valid)
         {
             Serial.println("*********************************************");

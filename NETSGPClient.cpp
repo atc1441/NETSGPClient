@@ -1,20 +1,20 @@
 #include <Arduino.h>
 
-#include "MicroInverterArduino.h"
+#include "NETSGPClient.h"
 
-MicroInverterArduino::MicroInverterArduino(Stream& stream, const uint8_t progPin) : mStream(stream), mProgPin(progPin)
+NETSGPClient::NETSGPClient(Stream& stream, const uint8_t progPin) : mStream(stream), mProgPin(progPin)
 {
     pinMode(mProgPin, OUTPUT);
     disableProgramming();
 }
 
-MicroInverterArduino::~MicroInverterArduino() { }
+NETSGPClient::~NETSGPClient() { }
 
-MicroInverterArduino::Status MicroInverterArduino::getStatus(const uint32_t deviceID)
+NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
     flushRX(); // Need to flush RX now to make sure it is empty for waitForAnswer()
     sendCommand(Command::STATUS, 0x00, deviceID);
-    Status status;
+    InverterStatus status;
     if (waitForAnswer(27)) // command == Command::STATUS ? 27 : 15
     {
         status.valid = true;
@@ -42,7 +42,7 @@ MicroInverterArduino::Status MicroInverterArduino::getStatus(const uint32_t devi
     return status;
 }
 
-void MicroInverterArduino::sendCommand(const Command command, const uint8_t value, const uint32_t deviceID)
+void NETSGPClient::sendCommand(const Command command, const uint8_t value, const uint32_t deviceID)
 {
     uint8_t* bufferPointer = &mBuffer[0];
 
@@ -65,7 +65,7 @@ void MicroInverterArduino::sendCommand(const Command command, const uint8_t valu
     mStream.write(&mBuffer[0], 15);
 }
 
-bool MicroInverterArduino::waitForAnswer(const size_t expectedSize)
+bool NETSGPClient::waitForAnswer(const size_t expectedSize)
 {
     const uint32_t startTime = millis();
     while (millis() - startTime < 100)
@@ -79,7 +79,7 @@ bool MicroInverterArduino::waitForAnswer(const size_t expectedSize)
     return false;
 }
 
-uint8_t MicroInverterArduino::calcCRC() const
+uint8_t NETSGPClient::calcCRC() const
 {
     uint8_t crc = 0;
     for (int i = 0; i < 14; ++i)
@@ -89,17 +89,17 @@ uint8_t MicroInverterArduino::calcCRC() const
     return crc;
 }
 
-void MicroInverterArduino::enableProgramming()
+void NETSGPClient::enableProgramming()
 {
     digitalWrite(mProgPin, LOW);
 }
 
-void MicroInverterArduino::disableProgramming()
+void NETSGPClient::disableProgramming()
 {
     digitalWrite(mProgPin, HIGH);
 }
 
-void MicroInverterArduino::flushRX()
+void NETSGPClient::flushRX()
 {
     while (mStream.read() != -1) { }
 }
