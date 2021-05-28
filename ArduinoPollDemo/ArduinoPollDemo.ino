@@ -45,8 +45,7 @@ void loop() {
 
         uint32_t device_id = rx_buffer[6] << 24 | rx_buffer[7] << 16 | rx_buffer[8] << 8 | rx_buffer[9] & 0xff;
 
-        int state = 0;// not reversed
-        int power_grade = 0;// not reversed
+        int state = rx_buffer[25];// not reversed
 
         float dc_voltage = (rx_buffer[15] << 8 | rx_buffer[16]) / 100;
         float dc_current = (rx_buffer[17] << 8 | rx_buffer[18]) / 100;
@@ -56,7 +55,18 @@ void loop() {
         float ac_current = (rx_buffer[21] << 8 | rx_buffer[22]) / 100;
         float ac_power = ac_voltage * ac_current;
 
-        int power_gen_total = 0;// not reversed
+        union byte_to_float_union {
+          byte byte_in[4];
+          float float_out;
+        } byte_to_float;
+
+        byte_to_float.byte_in[0] = rx_buffer[13];
+        byte_to_float.byte_in[1] = rx_buffer[12];
+        byte_to_float.byte_in[2] = rx_buffer[11];
+        byte_to_float.byte_in[3] = rx_buffer[10];
+
+        float power_gen_total = byte_to_float.float_out;
+
         int temperature = rx_buffer[26];// not reversed
 
         Serial.println("*********************************************");
@@ -64,7 +74,6 @@ void loop() {
         Serial.print("Device: ");
         Serial.println(device_id, HEX);
         Serial.println("Status: "  + String(state));
-        Serial.println("PowerGrade: "  + String(power_grade));
         Serial.println("DC_Voltage: "  + String(dc_voltage) + "V");
         Serial.println("DC_Current: "  + String(dc_current) + "A");
         Serial.println("DC_Power: "  + String(dc_power) + "W");
@@ -133,7 +142,7 @@ void read_rf_setting() {
   uint8_t req_cmd[] = {0xAA, 0x5C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x18};
 
   digitalWrite(prog_pin, LOW);
-  delay(1000);
+  delay(400);
   Serial.println("Writing_settings_req:");
   for (int posi = 0; posi < sizeof(req_cmd); posi++) {
     Serial2.write(req_cmd[posi]);
@@ -152,5 +161,5 @@ void read_rf_setting() {
   Serial.println("");
 
   digitalWrite(prog_pin, HIGH);
-  delay(500);
+  delay(10);
 }
