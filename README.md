@@ -9,8 +9,8 @@ https://youtu.be/uA2eMhF7RCY
 The `PollDemo` shows how to request a status from the Micro Inverter synchronously.
 Input your inverter id to get status updates.
 
-The `AsyncDemo` shoows how to get a status from multiple Micro Inverters asynchronously.
-Input one or more inverter identifiers to get status updates inside the callback
+The `AsyncDemo` shows how to get a status from multiple Micro Inverters asynchronously.
+Input one or more inverter identifiers to get status updates inside the callback.
 
 
 ## Supported Devices

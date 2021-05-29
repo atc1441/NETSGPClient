@@ -1,0 +1,38 @@
+#######################################
+# Syntax Coloring Map For Test
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+NETSGPClient	KEYWORD1
+AsyncNETSGPClient	KEYWORD1
+LC12S	KEYWORD1
+RFPower	KEYWORD1
+Baudrate	KEYWORD1
+Settings	KEYWORD1
+InverterStatus	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+getStatus	KEYWORD2
+readRFModuleSettings	KEYWORD2
+writeRFModuleSettings	KEYWORD2
+setDefaultRFSettings	KEYWORD2
+setStatusCallback	KEYWORD2
+registerInverter	KEYWORD2
+deregisterInverter	KEYWORD2
+update	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+DEFAULT_SETTINGS	LITERAL1
