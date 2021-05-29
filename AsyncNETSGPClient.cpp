@@ -25,7 +25,7 @@ void AsyncNETSGPClient::update()
     while (mStream.available() >= 27)
     {
         // Search for a magic byte and command
-        const uint8_t header[2] = {43, Command::STATUS};
+        const uint8_t header[2] = {MAGIC_BYTE, Command::STATUS};
         if (!mStream.find(&header[0], 2))
         {
             continue;

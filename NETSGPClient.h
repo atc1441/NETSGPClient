@@ -179,4 +179,5 @@ protected:
     Stream& mStream; /// Stream for communication
     uint8_t mProgPin; /// Programming enable pin of RF module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer
+    static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
 };

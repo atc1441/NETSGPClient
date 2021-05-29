@@ -127,7 +127,7 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
 {
     uint8_t* bufferPointer = &mBuffer[0];
 
-    *bufferPointer++ = 0x43;
+    *bufferPointer++ = MAGIC_BYTE;
     *bufferPointer++ = command;
     *bufferPointer++ = 0x00;
     *bufferPointer++ = 0x00;
