@@ -55,16 +55,6 @@ void loop() {
         float ac_current = (rx_buffer[21] << 8 | rx_buffer[22]) / 100;
         float ac_power = ac_voltage * ac_current;
 
-        /* union byte_to_float_union {
-           byte byte_in[4];
-           float float_out;
-          } byte_to_float;
-
-          byte_to_float.byte_in[0] = rx_buffer[13];
-          byte_to_float.byte_in[1] = rx_buffer[12];
-          byte_to_float.byte_in[2] = rx_buffer[11];
-          byte_to_float.byte_in[3] = rx_buffer[10];
-        */
         const uint32_t tempTotal = rx_buffer[10] << 24 | rx_buffer[11] << 16 | rx_buffer[12] << 8 | (rx_buffer[13] & 0xFF);
         float power_gen_total = *((float*)&tempTotal);
 
