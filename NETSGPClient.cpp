@@ -12,12 +12,12 @@ NETSGPClient::~NETSGPClient() { }
 
 NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
-    flushRX(); // Need to flush RX now to make sure it is empty for waitForAnswer()
     sendCommand(Command::STATUS, 0x00, deviceID);
     InverterStatus status;
-    if (waitForAnswer(27)) // command == Command::STATUS ? 27 : 15
+    if (waitForMessage()) // command == Command::STATUS ? 27 : 15
     {
         status.valid = true;
+        findAndReadStatusMessage();
         fillInverterStatusFromBuffer(&mBuffer[0], status);
     }
     else
@@ -146,18 +146,30 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
     mStream.write(&mBuffer[0], 15);
 }
 
-bool NETSGPClient::waitForAnswer(const size_t expectedSize)
+bool NETSGPClient::waitForMessage()
 {
     const uint32_t startTime = millis();
     while (millis() - startTime < 1000)
     {
         if (mStream.available())
         {
-            return mStream.readBytes(&mBuffer[0], expectedSize) == expectedSize;
+            return true;
         }
         delay(1);
     }
     return false;
+}
+
+bool NETSGPClient::findAndReadStatusMessage()
+{
+    // Search for a status header consisting of magic byte and status command byte
+    if (!mStream.find(&STATUS_HEADER[0], 2))
+    {
+        return false;
+    }
+
+    // Read rest of message
+    return mStream.readBytes(&mBuffer[2], 25) == 25;
 }
 
 uint8_t NETSGPClient::calcCRC(const size_t bytes) const
@@ -182,11 +194,6 @@ void NETSGPClient::disableProgramming()
     delay(10);
 }
 
-void NETSGPClient::flushRX()
-{
-    while (mStream.read() != -1) { }
-}
-
 void NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status)
 {
     status.deviceID = buffer[6] << 24 | buffer[7] << 16 | buffer[8] << 8 | (buffer[9] & 0xFF);
@@ -207,3 +214,5 @@ void NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
     status.state = buffer[25]; // not fully reversed
     status.temperature = buffer[26]; // not fully reversed
 }
+
+const uint8_t NETSGPClient::STATUS_HEADER[2] = {MAGIC_BYTE, Command::STATUS};

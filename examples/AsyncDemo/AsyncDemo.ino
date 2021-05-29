@@ -1,8 +1,9 @@
 #include "AsyncNETSGPClient.h"
 
-constexpr const uint8_t PROG_PIN = 4;
-constexpr const uint8_t RX_PIN = 16;
-constexpr const uint8_t TX_PIN = 17;
+constexpr const uint8_t PROG_PIN = 4; /// Programming enable pin of RF module
+constexpr const uint8_t RX_PIN = 16; /// RX pin of RF module
+constexpr const uint8_t TX_PIN = 17; /// TX pin of RF module
+constexpr const uint32_t inverterID = 0x11002793; /// Identifier of your inverter (see label on inverter)
 
 AsyncNETSGPClient client(Serial2, PROG_PIN); // Defaults to update every 2 seconds
 // AsyncNETSGPClient client(Serial2, PROG_PIN, 10); // Update every 10 seconds
@@ -39,11 +40,17 @@ void setup()
         Serial.println("Could not set RF module to default settings");
     }
 
+    // Make sure you set your callback to receive status updates
     client.setStatusCallback(onInverterStatus);
-    client.registerInverter(0x11002793);
+    // Register the inverter whose status should be read
+    // This function can be called throughout your program to add inverters as you like
+    // To remove an inverter whose status should not be updated anymore you can call
+    // client.deregisterInverter(inverterID);
+    client.registerInverter(inverterID);
 }
 
 void loop()
 {
+    // The AsyncNETSGPClient needs to be actively updated
     client.update();
 }

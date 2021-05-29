@@ -1,10 +1,11 @@
 #include "NETSGPClient.h"
 
-constexpr const uint8_t PROG_PIN = 4;
-constexpr const uint8_t RX_PIN = 16;
-constexpr const uint8_t TX_PIN = 17;
+constexpr const uint8_t PROG_PIN = 4; /// Programming enable pin of RF module
+constexpr const uint8_t RX_PIN = 16; /// RX pin of RF module
+constexpr const uint8_t TX_PIN = 17; /// TX pin of RF module
+constexpr const uint32_t inverterID = 0x11002793; /// Identifier of your inverter (see label on inverter)
 
-NETSGPClient client(Serial2, PROG_PIN);
+NETSGPClient client(Serial2, PROG_PIN); /// NETSGPClient instance
 
 void setup()
 {
@@ -33,7 +34,7 @@ void loop()
         Serial.println("");
         Serial.println("Sending request now");
 
-        const NETSGPClient::InverterStatus status = client.getStatus(0x11002793);
+        const NETSGPClient::InverterStatus status = client.getStatus(inverterID);
         if (status.valid)
         {
             Serial.println("*********************************************");

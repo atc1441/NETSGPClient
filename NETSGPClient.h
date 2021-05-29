@@ -143,12 +143,17 @@ protected:
     /// @param deviceID Recipient inverter identifier
     void sendCommand(const Command command, const uint8_t value, const uint32_t deviceID);
 
-    /// @brief Wait for an answer with the given expected size.
+    /// @brief Wait for a message with a timeout of 1 second
     ///
-    /// @param expectedSize Expected answer size in bytes
-    /// @return true If an answer with correct lenght was received
+    /// @return true If stream contains a message within timeout
     /// @return false If not
-    bool waitForAnswer(const size_t expectedSize);
+    bool waitForMessage();
+
+    /// @brief Try to find a status message in the stream and if present read it into mBuffer
+    ///
+    /// @return true If message was found and read into mBuffer
+    /// @return false If not
+    bool findAndReadStatusMessage();
 
     /// @brief Calculate the checksum for a message inside the buffer.
     ///
@@ -166,9 +171,6 @@ protected:
     /// This function will delay code execution for 10ms
     void disableProgramming();
 
-    /// @brief Flush the receive buffer of the stream.
-    void flushRX();
-
     /// @brief Fill the given inverter status from the given buffer
     ///
     /// @param buffer Bufffer containing raw inverter status data, must be at least 27 bytes in size
@@ -180,4 +182,5 @@ protected:
     uint8_t mProgPin; /// Programming enable pin of RF module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer
     static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
+    static const uint8_t STATUS_HEADER[2]; /// Start of status message containing magic byte and status command byte
 };
