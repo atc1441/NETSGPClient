@@ -7,7 +7,7 @@
 /// @brief Async version of NETSGPClient
 class AsyncNETSGPClient : public NETSGPClient
 {
-    typedef void (*InverterStatusCallback)(const NETSGPClient::InverterStatus);
+    typedef void (*InverterStatusCallback)(const NETSGPClient::InverterStatus&);
 
 public:
     /// @brief Construct a new AsyncNETSGPClient object.

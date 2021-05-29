@@ -22,19 +22,19 @@ void AsyncNETSGPClient::update()
     }
 
     // Check for answers
-    if (mStream.available() >= 27)
+    while (mStream.available() >= 27)
     {
+        // Search for a magic byte and command
         const uint8_t header[2] = {43, Command::STATUS};
-        if (!mStream.findUntil(&header[0], 2, nullptr, 0))
+        if (!mStream.find(&header[0], 2))
         {
-            return;
+            continue;
         }
-        // We found a magic byte and the command
 
         // Read rest of message
         if (mStream.readBytes(&mBuffer[2], 25) != 25)
         {
-            return;
+            continue;
         }
 
         if (mCallback)
@@ -42,7 +42,6 @@ void AsyncNETSGPClient::update()
             InverterStatus status;
             status.valid = true; // TODO maybe use checksum for this
             fillInverterStatusFromBuffer(&mBuffer[0], status);
-
             mCallback(status);
         }
     }

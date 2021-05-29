@@ -7,7 +7,7 @@ constexpr const uint8_t TX_PIN = 17;
 AsyncNETSGPClient client(Serial2, PROG_PIN); // Defaults to update every 2 seconds
 // AsyncNETSGPClient client(Serial2, PROG_PIN, 10); // Update every 10 seconds
 
-void onInverterStatus(const AsyncNETSGPClient::InverterStatus status)
+void onInverterStatus(const AsyncNETSGPClient::InverterStatus& status)
 {
     // We do not need to check status.valid, because only valid ones are anounced
     Serial.println("*********************************************");
