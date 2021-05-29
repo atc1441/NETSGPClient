@@ -21,8 +21,8 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 
         status.deviceID = mBuffer[6] << 24 | mBuffer[7] << 16 | mBuffer[8] << 8 | (mBuffer[9] & 0xFF);
 
-        status.totalGeneratedPower
-            = static_cast<float>(mBuffer[10] << 24 | mBuffer[11] << 16 | mBuffer[12] << 8 | (mBuffer[13] & 0xFF));
+        const uint32_t tempTotal = mBuffer[10] << 24 | mBuffer[11] << 16 | mBuffer[12] << 8 | (mBuffer[13] & 0xFF);
+        status.totalGeneratedPower = *((float*)&tempTotal);
 
         // CRC = mBuffer[14]
 
@@ -127,9 +127,15 @@ bool NETSGPClient::writeRFModuleSettings(const LC12S::Settings& settings)
 
 bool NETSGPClient::setDefaultRFSettings()
 {
-    if (readRFModuleSettings() != LC12S::DEFAULT_SETTINGS)
+    LC12S::Settings settings = readRFModuleSettings();
+    if (settings != LC12S::DEFAULT_SETTINGS)
     {
-        return writeRFModuleSettings(LC12S::DEFAULT_SETTINGS);
+        // Copy over default settings without moduleID since that is uinque for each module
+        settings.networkID = LC12S::DEFAULT_SETTINGS.networkID;
+        settings.rfPower = LC12S::DEFAULT_SETTINGS.rfPower;
+        settings.baudrate = LC12S::DEFAULT_SETTINGS.baudrate;
+        settings.rfChannel = LC12S::DEFAULT_SETTINGS.rfChannel;
+        return writeRFModuleSettings(settings);
     }
     return true;
 }

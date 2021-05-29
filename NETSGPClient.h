@@ -40,7 +40,7 @@ namespace LC12S
     /// @brief LC12S module settings
     struct Settings
     {
-        uint16_t moduleID; /// Module identifier
+        uint16_t moduleID; /// Unique module identifier
         uint16_t networkID; /// Network identifier
         LC12S::RFPower rfPower; /// RF power
         LC12S::Baudrate baudrate; /// Baudrate
@@ -49,8 +49,8 @@ namespace LC12S
 
         bool operator==(const Settings& rhs) const
         {
-            return moduleID == rhs.moduleID && networkID == rhs.networkID && rfPower == rhs.rfPower
-                && baudrate == rhs.baudrate && rfChannel == rhs.rfChannel && valid == rhs.valid;
+            return networkID == rhs.networkID && rfPower == rhs.rfPower && baudrate == rhs.baudrate
+                && rfChannel == rhs.rfChannel && valid == rhs.valid;
         }
         bool operator!=(const Settings& rhs) const { return !operator==(rhs); }
     };

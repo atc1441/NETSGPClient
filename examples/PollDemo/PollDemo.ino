@@ -41,7 +41,6 @@ void loop()
             Serial.print("Device: ");
             Serial.println(status.deviceID, HEX);
             Serial.println("Status: " + String(status.state));
-            Serial.println("PowerGrade: " + String(status.powerGrade));
             Serial.println("DC_Voltage: " + String(status.dcVoltage) + "V");
             Serial.println("DC_Current: " + String(status.dcCurrent) + "A");
             Serial.println("DC_Power: " + String(status.dcPower) + "W");
