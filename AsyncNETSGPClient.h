@@ -7,6 +7,7 @@
 /// @brief Async version of NETSGPClient
 class AsyncNETSGPClient : public NETSGPClient
 {
+    /// @brief Callback function type definition for inverter status updates
     typedef void (*InverterStatusCallback)(const NETSGPClient::InverterStatus&);
 
 public:
