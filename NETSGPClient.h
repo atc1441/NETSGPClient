@@ -126,7 +126,7 @@ public:
     /// @return false If settings could not be written
     bool setDefaultRFSettings();
 
-private:
+protected:
     /// @brief All known commands
     enum Command
     {
@@ -135,7 +135,7 @@ private:
         POWER_GRADE = 0xC3, /// Set power grade command
     };
 
-private:
+protected:
     /// @brief Send a specific command to a specific inverter with a specific value.
     ///
     /// @param command Command to send
@@ -169,7 +169,13 @@ private:
     /// @brief Flush the receive buffer of the stream.
     void flushRX();
 
-private:
+    /// @brief Fill the given inverter status from the given buffer
+    ///
+    /// @param buffer Bufffer containing raw inverter status data, must be at least 27 bytes in size
+    /// @param status Inverter status to fill
+    void fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
+
+protected:
     Stream& mStream; /// Stream for communication
     uint8_t mProgPin; /// Programming enable pin of RF module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer

@@ -18,24 +18,7 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
     if (waitForAnswer(27)) // command == Command::STATUS ? 27 : 15
     {
         status.valid = true;
-
-        status.deviceID = mBuffer[6] << 24 | mBuffer[7] << 16 | mBuffer[8] << 8 | (mBuffer[9] & 0xFF);
-
-        const uint32_t tempTotal = mBuffer[10] << 24 | mBuffer[11] << 16 | mBuffer[12] << 8 | (mBuffer[13] & 0xFF);
-        status.totalGeneratedPower = *((float*)&tempTotal);
-
-        // CRC = mBuffer[14]
-
-        status.dcVoltage = (mBuffer[15] << 8 | mBuffer[16]) / 100;
-        status.dcCurrent = (mBuffer[17] << 8 | mBuffer[18]) / 100;
-        status.dcPower = status.dcVoltage * status.dcCurrent;
-
-        status.acVoltage = (mBuffer[19] << 8 | mBuffer[20]) / 100;
-        status.acCurrent = (mBuffer[21] << 8 | mBuffer[22]) / 100;
-        status.acPower = status.acVoltage * status.acCurrent;
-
-        status.state = mBuffer[25]; // not fully reversed
-        status.temperature = mBuffer[26]; // not fully reversed
+        fillInverterStatusFromBuffer(&mBuffer[0], status);
     }
     else
     {
@@ -202,4 +185,25 @@ void NETSGPClient::disableProgramming()
 void NETSGPClient::flushRX()
 {
     while (mStream.read() != -1) { }
+}
+
+void NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status)
+{
+    status.deviceID = buffer[6] << 24 | buffer[7] << 16 | buffer[8] << 8 | (buffer[9] & 0xFF);
+
+    const uint32_t tempTotal = buffer[10] << 24 | buffer[11] << 16 | buffer[12] << 8 | (buffer[13] & 0xFF);
+    status.totalGeneratedPower = *((float*)&tempTotal);
+
+    // CRC = buffer[14]
+
+    status.dcVoltage = (buffer[15] << 8 | buffer[16]) / 100;
+    status.dcCurrent = (buffer[17] << 8 | buffer[18]) / 100;
+    status.dcPower = status.dcVoltage * status.dcCurrent;
+
+    status.acVoltage = (buffer[19] << 8 | buffer[20]) / 100;
+    status.acCurrent = (buffer[21] << 8 | buffer[22]) / 100;
+    status.acPower = status.acVoltage * status.acCurrent;
+
+    status.state = buffer[25]; // not fully reversed
+    status.temperature = buffer[26]; // not fully reversed
 }
