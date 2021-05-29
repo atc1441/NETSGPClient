@@ -166,7 +166,7 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
 bool NETSGPClient::waitForAnswer(const size_t expectedSize)
 {
     const uint32_t startTime = millis();
-    while (millis() - startTime < 100)
+    while (millis() - startTime < 1000)
     {
         if (mStream.available())
         {
