@@ -175,7 +175,9 @@ protected:
     ///
     /// @param buffer Bufffer containing raw inverter status data, must be at least 27 bytes in size
     /// @param status Inverter status to fill
-    void fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
+    /// @return true If checksum is valid
+    /// @return false If checksum is invalid
+    bool fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
 
 protected:
     Stream& mStream; /// Stream for communication

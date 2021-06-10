@@ -3,7 +3,7 @@
 #include "AsyncNETSGPClient.h"
 
 AsyncNETSGPClient::AsyncNETSGPClient(Stream& stream, const uint8_t progPin, const uint8_t interval)
-    : NETSGPClient(stream, progPin), mIntervalMS(1000 * interval)
+    : NETSGPClient(stream, progPin), mIntervalMS(1000 * interval), mDeviceIte(mDevices.begin())
 { }
 
 void AsyncNETSGPClient::update()
@@ -11,13 +11,27 @@ void AsyncNETSGPClient::update()
     const uint32_t currentMillis = millis();
 
     // Send comands at mIntervalMS
-    if (currentMillis - mLastUpdateMS >= mIntervalMS)
+    if (currentMillis - mLastUpdateMS >= mIntervalMS && !mCanSend)
     {
         mLastUpdateMS = currentMillis;
+        mCanSend = true;
+    }
 
-        for (const uint32_t deviceID : mDevices)
+    if (mCanSend && currentMillis - mLastSendMS >= 1010)
+    {
+        if (mDeviceIte != mDevices.end())
         {
-            sendCommand(Command::STATUS, 0x00, deviceID);
+            mLastSendMS = currentMillis;
+            mLastUpdateMS = currentMillis;
+            sendCommand(Command::STATUS, 0x00, *mDeviceIte);
+            // Serial1.printf("Sent to %#04x\n", *mDeviceIte);
+            mCanSend = false;
+            ++mDeviceIte;
+        }
+        else
+        {
+            mCanSend = false; // make sure we only poll every mIntervalMS
+            mDeviceIte = mDevices.begin();
         }
     }
 
@@ -28,9 +42,12 @@ void AsyncNETSGPClient::update()
         if (findAndReadStatusMessage() && mCallback)
         {
             InverterStatus status;
-            fillInverterStatusFromBuffer(&mBuffer[0], status);
-            status.valid = true; // TODO maybe use checksum for this
-            mCallback(status);
+            if (fillInverterStatusFromBuffer(&mBuffer[0], status))
+            {
+                status.valid = true;
+                mCallback(status);
+                mCanSend = true;
+            }
         }
     }
 }
