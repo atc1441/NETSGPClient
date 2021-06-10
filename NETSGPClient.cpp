@@ -194,25 +194,25 @@ void NETSGPClient::disableProgramming()
     delay(10);
 }
 
-void NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status)
+bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status)
 {
     status.deviceID = buffer[6] << 24 | buffer[7] << 16 | buffer[8] << 8 | (buffer[9] & 0xFF);
 
     const uint32_t tempTotal = buffer[10] << 24 | buffer[11] << 16 | buffer[12] << 8 | (buffer[13] & 0xFF);
     status.totalGeneratedPower = *((float*)&tempTotal);
 
-    // CRC = buffer[14]
-
-    status.dcVoltage = (buffer[15] << 8 | buffer[16]) / 100;
-    status.dcCurrent = (buffer[17] << 8 | buffer[18]) / 100;
+    status.dcVoltage = (buffer[15] << 8 | buffer[16]) / 100.0f;
+    status.dcCurrent = (buffer[17] << 8 | buffer[18]) / 100.0f;
     status.dcPower = status.dcVoltage * status.dcCurrent;
 
-    status.acVoltage = (buffer[19] << 8 | buffer[20]) / 100;
-    status.acCurrent = (buffer[21] << 8 | buffer[22]) / 100;
+    status.acVoltage = (buffer[19] << 8 | buffer[20]) / 100.0f;
+    status.acCurrent = (buffer[21] << 8 | buffer[22]) / 100.0f;
     status.acPower = status.acVoltage * status.acCurrent;
 
     status.state = buffer[25]; // not fully reversed
     status.temperature = buffer[26]; // not fully reversed
+
+    return buffer[14] == calcCRC(14);
 }
 
 const uint8_t NETSGPClient::STATUS_HEADER[2] = {MAGIC_BYTE, Command::STATUS};

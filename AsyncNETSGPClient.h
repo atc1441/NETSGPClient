@@ -41,6 +41,9 @@ public:
 private:
     uint16_t mIntervalMS; /// Update interval in milliseconds
     uint32_t mLastUpdateMS; /// Last update time in milliseconds
+    uint32_t mLastSendMS; /// Makes sure we do not send to often
+    bool mCanSend = true; /// Can the next message be sent?
     std::set<uint32_t> mDevices; /// All devices to poll
+    std::set<uint32_t>::iterator mDeviceIte; /// Set iterator to know which device to poll
     InverterStatusCallback mCallback = nullptr; /// Callback for status updates
 };
