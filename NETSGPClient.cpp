@@ -1,6 +1,6 @@
-#include <Arduino.h>
-
 #include "NETSGPClient.h"
+
+#include <Arduino.h>
 
 NETSGPClient::NETSGPClient(Stream& stream, const uint8_t progPin) : mStream(stream), mProgPin(progPin)
 {
@@ -14,10 +14,15 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
     sendCommand(Command::STATUS, 0x00, deviceID);
     InverterStatus status;
-    if (waitForMessage()) // command == Command::STATUS ? 27 : 15
+    if (waitForMessage() && findAndReadStatusMessage())
     {
-        status.valid = true;
-        findAndReadStatusMessage();
+#ifdef DEBUG_SERIAL
+        for (uint8_t i = 0; i < 32; i++)
+        {
+            DEBUGF("%02X", mBuffer[i]);
+        }
+        DEBUGLN();
+#endif
         fillInverterStatusFromBuffer(&mBuffer[0], status);
     }
     else
@@ -212,7 +217,11 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
     status.state = buffer[25]; // not fully reversed
     status.temperature = buffer[26]; // not fully reversed
 
-    return buffer[14] == calcCRC(14);
+    status.valid = buffer[14] == calcCRC(14);
+
+    DEBUGF("CRC is ", status.valid ? "valid" : "invalid");
+
+    return status.valid;
 }
 
 const uint8_t NETSGPClient::STATUS_HEADER[2] = {MAGIC_BYTE, Command::STATUS};

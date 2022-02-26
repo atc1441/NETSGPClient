@@ -2,6 +2,24 @@
 
 #include <Stream.h>
 
+// To enable debug output uncomment one of the below lines
+// #define DEBUG_SERIAL Serial
+// #define DEBUG_SERIAL Serial1
+
+#ifdef DEBUG_SERIAL
+#define DEBUG(s) DEBUG_SERIAL.print(s)
+#define DEBUGLN(s) DEBUG_SERIAL.println(s)
+#if defined(__cplusplus) && (__cplusplus > 201703L)
+#define DEBUGF(format, ...) DEBUG_SERIAL.printf_P(PSTR(format), __VA_OPT__(, ) __VA_ARGS__)
+#else // !(defined(__cplusplus) && (__cplusplus >  201703L))
+#define DEBUGF(format, ...) DEBUG_SERIAL.printf_P(PSTR(format), ##__VA_ARGS__)
+#endif
+#else
+#define DEBUG(s)
+#define DEBUGLN(s)
+#define DEBUGF(format, ...)
+#endif
+
 /// @brief LC12S 2.4GHz RF module specific stuff
 namespace LC12S
 {
