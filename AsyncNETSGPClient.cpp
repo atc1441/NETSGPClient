@@ -1,6 +1,6 @@
-#include <Arduino.h>
-
 #include "AsyncNETSGPClient.h"
+
+#include <Arduino.h>
 
 AsyncNETSGPClient::AsyncNETSGPClient(Stream& stream, const uint8_t progPin, const uint8_t interval)
     : NETSGPClient(stream, progPin), mIntervalMS(1000 * interval), mDeviceIte(mDevices.begin())
@@ -13,7 +13,6 @@ void AsyncNETSGPClient::update()
     // Send comands at mIntervalMS
     if (currentMillis - mLastUpdateMS >= mIntervalMS && !mCanSend)
     {
-        mLastUpdateMS = currentMillis;
         mCanSend = true;
     }
 
@@ -39,13 +38,22 @@ void AsyncNETSGPClient::update()
     while (mStream.available() >= 27)
     {
         // Search for a read status message
-        if (findAndReadStatusMessage() && mCallback)
+        if (findAndReadStatusMessage())
         {
+#ifdef DEBUG_SERIAL
+            for (uint8_t i = 0; i < 32; i++)
+            {
+                DEBUGF("%02X", mBuffer[i]);
+            }
+            DEBUGLN();
+#endif
             InverterStatus status;
             if (fillInverterStatusFromBuffer(&mBuffer[0], status))
             {
-                status.valid = true;
-                mCallback(status);
+                if (mCallback)
+                {
+                    mCallback(status);
+                }
                 mCanSend = true;
             }
         }
