@@ -5,12 +5,12 @@ constexpr const uint8_t RX_PIN = 16; /// RX pin of RF module
 constexpr const uint8_t TX_PIN = 17; /// TX pin of RF module
 constexpr const uint32_t inverterID = 0x11002793; /// Identifier of your inverter (see label on inverter)
 
-AsyncNETSGPClient client(Serial2, PROG_PIN); // Defaults to update every 2 seconds
-// AsyncNETSGPClient client(Serial2, PROG_PIN, 10); // Update every 10 seconds
+AsyncNETSGPClient client(Serial2, PROG_PIN); // Defaults to fetch status every 2 seconds
+// AsyncNETSGPClient client(Serial2, PROG_PIN, 10); // Fetch status every 10 seconds
 
 void onInverterStatus(const AsyncNETSGPClient::InverterStatus& status)
 {
-    // We do not need to check status.valid, because only valid ones are anounced
+    // We do not need to check status.valid, because only valid ones are announced
     Serial.println("*********************************************");
     Serial.println("Received Inverter Status");
     Serial.print("Device: ");
@@ -32,7 +32,7 @@ void setup()
     Serial2.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
     pinMode(LED_BUILTIN, OUTPUT);
     delay(1000);
-    Serial.println("Welcome to Micro Inverter Interface by ATCnetz.de and enwi");
+    Serial.println("Welcome to Micro Inverter Interface by ATCnetz.de and enwi.one");
 
     // Make sure the RF module is set to the correct settings
     if (!client.setDefaultRFSettings())
