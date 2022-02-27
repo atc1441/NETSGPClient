@@ -219,7 +219,7 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
 
     status.valid = buffer[14] == calcCRC(14);
 
-    DEBUGF("CRC is ", status.valid ? "valid" : "invalid");
+    DEBUGF("CRC is %s\n", status.valid ? "valid" : "invalid");
 
     return status.valid;
 }
