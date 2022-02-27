@@ -23,7 +23,7 @@ void AsyncNETSGPClient::update()
             mLastSendMS = currentMillis;
             mLastUpdateMS = currentMillis;
             sendCommand(Command::STATUS, 0x00, *mDeviceIte);
-            // Serial1.printf("Sent to %#04x\n", *mDeviceIte);
+            DEBUGF("Sent STATUS request to %#08x\n", *mDeviceIte);
             mCanSend = false;
             ++mDeviceIte;
         }
