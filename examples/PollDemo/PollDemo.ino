@@ -13,7 +13,7 @@ void setup()
     Serial2.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
     pinMode(LED_BUILTIN, OUTPUT);
     delay(1000);
-    Serial.println("Welcome to Micro Inverter Interface by ATCnetz.de and enwi");
+    Serial.println("Welcome to Micro Inverter Interface by ATCnetz.de and enwi.one");
 
     // Make sure the RF module is set to the correct settings
     if (!client.setDefaultRFSettings())
