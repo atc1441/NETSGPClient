@@ -18,6 +18,7 @@ Input one or more inverter identifiers to get status updates inside the callback
 |:---------------|--------------------|--------------------|-------------|------------------|
 | `SG200MS`      | :white_check_mark: | :white_check_mark: | 200W model  | 11000001         |
 | `SG300MS`      | :x:                | :grey_question:    | 300W model  | 19000001         |
+| `SG500MD`      | :white_check_mark: | :white_check_mark: | 500W model  | 34000001         |
 | `SG600MD`      | :x:                | :grey_question:    | 600W model  | 38000001         |
 | `SG700MD`      | :x:                | :grey_question:    | 700W model  | 41000001         |
 | `SG1000MQ`     | :x:                | :grey_question:    | 1.0kW model | 48000001         |
