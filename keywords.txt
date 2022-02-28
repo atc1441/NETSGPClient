@@ -13,6 +13,7 @@ RFPower	KEYWORD1
 Baudrate	KEYWORD1
 Settings	KEYWORD1
 InverterStatus	KEYWORD1
+InverterStatusCallback  KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
