@@ -52,6 +52,7 @@ You can find an overview of all devices and their datasheets [here](http://newen
 | `SG700MD`      | :x:                | :grey_question:    | 700W model  | 41000001         |
 | `SG700HD`      | :x:                | :grey_question:    | 700W model  | :grey_question:  |
 | `SG700TD`      | :x:                | :grey_question:    | 700W model  | :grey_question:  |
+| `SG800MD`      | :white_check_mark: | :white_check_mark: | 800W model  | 26000001 :grey_question:  |
 | `SG1000MD`     | :x:                | :grey_question:    | 1.0kW model | :grey_question:  |
 | `SG1000HD`     | :x:                | :grey_question:    | 1.0kW model | :grey_question:  |
 | `SG1000MQ`     | :x:                | :grey_question:    | 1.0kW model | 48000001         |
