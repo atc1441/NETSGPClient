@@ -109,6 +109,112 @@ public:
         float acPower; /// AC power in Watts
     };
 
+    /// @brief All possible power grades from 0% up to 100%
+    enum PowerGrade
+    {
+        PG0,
+        PG1,
+        PG2,
+        PG3,
+        PG4,
+        PG5,
+        PG6,
+        PG7,
+        PG8,
+        PG9,
+        PG10,
+        PG11,
+        PG12,
+        PG13,
+        PG14,
+        PG15,
+        PG16,
+        PG17,
+        PG18,
+        PG19,
+        PG20,
+        PG21,
+        PG22,
+        PG23,
+        PG24,
+        PG25,
+        PG26,
+        PG27,
+        PG28,
+        PG29,
+        PG30,
+        PG31,
+        PG32,
+        PG33,
+        PG34,
+        PG35,
+        PG36,
+        PG37,
+        PG38,
+        PG39,
+        PG40,
+        PG41,
+        PG42,
+        PG43,
+        PG44,
+        PG45,
+        PG46,
+        PG47,
+        PG48,
+        PG49,
+        PG50,
+        PG51,
+        PG52,
+        PG53,
+        PG54,
+        PG55,
+        PG56,
+        PG57,
+        PG58,
+        PG59,
+        PG60,
+        PG61,
+        PG62,
+        PG63,
+        PG64,
+        PG65,
+        PG66,
+        PG67,
+        PG68,
+        PG69,
+        PG70,
+        PG71,
+        PG72,
+        PG73,
+        PG74,
+        PG75,
+        PG76,
+        PG77,
+        PG78,
+        PG79,
+        PG80,
+        PG81,
+        PG82,
+        PG83,
+        PG84,
+        PG85,
+        PG86,
+        PG87,
+        PG88,
+        PG89,
+        PG90,
+        PG91,
+        PG92,
+        PG93,
+        PG94,
+        PG95,
+        PG96,
+        PG97,
+        PG98,
+        PG99,
+        PG100,
+    };
+
 public:
     /// @brief Construct a new NETSGPClient object.
     ///
@@ -125,6 +231,29 @@ public:
     /// @return InverterStatus Status of the inverter (InverterStatus.valid == true) or empty status
     /// (InverterStatus.valid == false)
     InverterStatus getStatus(const uint32_t deviceID);
+
+    /// @brief Set the power grade of the given inverter
+    ///
+    /// @param deviceID Unique device identifier
+    /// @param pg Power grade from 0-100% to set
+    /// @return true if power grade was set successfully
+    /// @return false if not
+    bool setPowerGrade(const uint32_t deviceID, const PowerGrade pg);
+
+    /// @brief Activate or deactivate the given inverter
+    ///
+    /// @param deviceID Unique device identifier
+    /// @param activate True to activate, false to deactivate
+    /// @return true if inverter was activated/deactivated
+    /// @return false if not
+    bool activate(const uint32_t deviceID, const bool activate);
+
+    /// @brief Reboot the given inverter
+    ///
+    /// @param deviceID Unique device identifier
+    /// @return true True if inverter will reboot
+    /// @return false if not
+    bool reboot(const uint32_t deviceID);
 
     /// @brief Read the settings of the RF module
     LC12S::Settings readRFModuleSettings();
@@ -153,6 +282,14 @@ protected:
         POWER_GRADE = 0xC3, /// Set power grade command
     };
 
+    /// @brief All known control values
+    enum Control
+    {
+        ACTIVATE = 0x01, /// Activate inverter
+        DEACTIVATE = 0x02, /// Deactivate inverter
+        REBOOT = 0x03, /// Reboot inverter
+    };
+
 protected:
     /// @brief Send a specific command to a specific inverter with a specific value.
     ///
@@ -161,17 +298,26 @@ protected:
     /// @param deviceID Recipient inverter identifier
     void sendCommand(const Command command, const uint8_t value, const uint32_t deviceID);
 
+    /// @brief Send a specific command to a specific inverter with a specific value and validate the reply
+    ///
+    /// @param command Command to send
+    /// @param value Value to send
+    /// @param deviceID  Recipient inverter identifier
+    /// @return true If command was sent and validated
+    /// @return false not
+    bool sendCommandAndValidate(const Command command, const uint8_t value, const uint32_t deviceID);
+
     /// @brief Wait for a message with a timeout of 1 second
     ///
     /// @return true If stream contains a message within timeout
     /// @return false If not
     bool waitForMessage();
 
-    /// @brief Try to find a status message in the stream and if present read it into mBuffer
+    /// @brief Try to find a reply in the stream and if present read it into mBuffer
     ///
-    /// @return true If message was found and read into mBuffer
+    /// @return true If reply was found and read into mBuffer
     /// @return false If not
-    bool findAndReadStatusMessage();
+    bool findAndReadReply();
 
     /// @brief Calculate the checksum for a message inside the buffer.
     ///
@@ -198,9 +344,8 @@ protected:
     bool fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
 
 protected:
+    constexpr static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
     Stream& mStream; /// Stream for communication
     uint8_t mProgPin; /// Programming enable pin of RF module (active low)
     uint8_t mBuffer[32] = {0}; /// Inernal buffer
-    static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
-    static const uint8_t STATUS_HEADER[2]; /// Start of status message containing magic byte and status command byte
 };

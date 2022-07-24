@@ -14,7 +14,7 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
     sendCommand(Command::STATUS, 0x00, deviceID);
     InverterStatus status;
-    if (waitForMessage() && findAndReadStatusMessage())
+    if (waitForMessage() && findAndReadReply())
     {
 #ifdef DEBUG_SERIAL
         for (uint8_t i = 0; i < 32; i++)
@@ -30,6 +30,21 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
         status.valid = false;
     }
     return status;
+}
+
+bool NETSGPClient::setPowerGrade(const uint32_t deviceID, const PowerGrade pg)
+{
+    return sendCommandAndValidate(Command::CONTROL, pg, deviceID);
+}
+
+bool NETSGPClient::activate(const uint32_t deviceID, const bool activate)
+{
+    return sendCommandAndValidate(Command::CONTROL, activate ? Control::ACTIVATE : Control::DEACTIVATE, deviceID);
+}
+
+bool NETSGPClient::reboot(const uint32_t deviceID)
+{
+    return sendCommandAndValidate(Command::CONTROL, Control::REBOOT, deviceID);
 }
 
 LC12S::Settings NETSGPClient::readRFModuleSettings()
@@ -134,8 +149,8 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
 
     *bufferPointer++ = MAGIC_BYTE;
     *bufferPointer++ = command;
-    *bufferPointer++ = 0x00;
-    *bufferPointer++ = 0x00;
+    *bufferPointer++ = 0x00; // data box ID
+    *bufferPointer++ = 0x00; // data box ID
     *bufferPointer++ = 0x00;
     *bufferPointer++ = 0x00;
     *bufferPointer++ = (deviceID >> 24) & 0xFF;
@@ -149,6 +164,24 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
     *bufferPointer++ = calcCRC(14);
 
     mStream.write(&mBuffer[0], 15);
+}
+
+bool NETSGPClient::sendCommandAndValidate(const Command command, const uint8_t value, const uint32_t deviceID)
+{
+    sendCommand(Command::CONTROL, value, deviceID);
+    if (waitForMessage() && findAndReadReply())
+    {
+#ifdef DEBUG_SERIAL
+        for (uint8_t i = 0; i < 32; i++)
+        {
+            DEBUGF("%02X", mBuffer[i]);
+        }
+        DEBUGLN();
+#endif
+        return mBuffer[14] == calcCRC(14) && mBuffer[13] == value;
+    }
+
+    return false;
 }
 
 bool NETSGPClient::waitForMessage()
@@ -165,16 +198,30 @@ bool NETSGPClient::waitForMessage()
     return false;
 }
 
-bool NETSGPClient::findAndReadStatusMessage()
+bool NETSGPClient::findAndReadReply()
 {
-    // Search for a status header consisting of magic byte and status command byte
-    if (!mStream.find(&STATUS_HEADER[0], 2))
+    // Search for a reply header consisting of magic byte and one of the command bytes
+    if (!mStream.find(MAGIC_BYTE))
     {
         return false;
     }
 
-    // Read rest of message
-    return mStream.readBytes(&mBuffer[2], 25) == 25;
+    size_t bytesToRead;
+    switch (mStream.read())
+    {
+    case Command::STATUS:
+        bytesToRead = 25; // whole message is 27 bytes
+        break;
+    case Command::CONTROL:
+    case Command::POWER_GRADE:
+        bytesToRead = 14; // whole message is 16 bytes
+        break;
+    default:
+        // technically we need to search for a magic byte again before we can say that no reply is found
+        return false;
+    }
+
+    return mStream.readBytes(&mBuffer[2], bytesToRead) == bytesToRead;
 }
 
 uint8_t NETSGPClient::calcCRC(const size_t bytes) const
@@ -215,6 +262,7 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
     status.acPower = status.acVoltage * status.acCurrent;
 
     status.state = buffer[25]; // not fully reversed
+
     status.temperature = buffer[26]; // not fully reversed
 
     status.valid = buffer[14] == calcCRC(14);
@@ -223,5 +271,3 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
 
     return status.valid;
 }
-
-const uint8_t NETSGPClient::STATUS_HEADER[2] = {MAGIC_BYTE, Command::STATUS};
