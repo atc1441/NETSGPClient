@@ -38,7 +38,7 @@ void AsyncNETSGPClient::update()
     while (mStream.available() >= 27)
     {
         // Search for a read status message
-        if (findAndReadStatusMessage())
+        if (findAndReadReply())
         {
 #ifdef DEBUG_SERIAL
             for (uint8_t i = 0; i < 32; i++)
