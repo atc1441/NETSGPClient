@@ -206,31 +206,34 @@ bool NETSGPClient::waitForMessage()
 
 bool NETSGPClient::findAndReadReply()
 {
-    // Search for a reply header consisting of magic byte and one of the command bytes
-    if (!mStream.find(MAGIC_BYTE))
+    // as long as we have data for at least a control or power grade reply keep on looking
+    while (mStream.available() >= 16)
     {
-        DEBUGLN("[findAndReadReply] Could not find magic byte");
-        return false;
-    }
+        // Search for a reply header consisting of magic byte and one of the command bytes
+        if (!mStream.find(MAGIC_BYTE))
+        {
+            DEBUGLN("[findAndReadReply] Could not find magic byte");
+            return false;
+        }
 
-    size_t bytesToRead;
-    const uint8_t command = mStream.read();
-    switch (command)
-    {
-    case Command::STATUS:
-        bytesToRead = 25; // whole message is 27 bytes
-        break;
-    case Command::CONTROL:
-    case Command::POWER_GRADE:
-        bytesToRead = 14; // whole message is 16 bytes
-        break;
-    default:
-        // technically we need to search for a magic byte again before we can say that no reply is found
-        DEBUGF("[findAndReadReply] Unexpected command 0x%02X", command);
-        return false;
+        const uint8_t command = mStream.read();
+        switch (command)
+        {
+        case Command::STATUS:
+            // whole message is 27 bytes
+            return mStream.readBytes(&mBuffer[2], 25) == 25;
+        case Command::CONTROL:
+        case Command::POWER_GRADE:
+            // whole message is 16 bytes
+            return mStream.readBytes(&mBuffer[2], 14) == 14;
+            // default:
+            //     // technically we need to search for a magic byte again before we can say that no reply is found
+            //     DEBUGF("[findAndReadReply] Unexpected command 0x%02X", command);
+            //     return false;
+        }
     }
-
-    return mStream.readBytes(&mBuffer[2], bytesToRead) == bytesToRead;
+    DEBUGLN("[findAndReadReply] Could not find command");
+    return false;
 }
 
 uint8_t NETSGPClient::calcCRC(const size_t bytes) const
