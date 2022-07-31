@@ -277,9 +277,9 @@ protected:
     /// @brief All known commands
     enum Command
     {
-        STATUS = 0xC0, /// Get status command
-        CONTROL = 0xC1, /// Control command
-        POWER_GRADE = 0xC3, /// Set power grade command
+        STATUS = 0xC0, /// Get status command (0xC0)
+        CONTROL = 0xC1, /// Control command (0xC1)
+        POWER_GRADE = 0xC3, /// Set power grade command (0xC3)
     };
 
     /// @brief All known control values
@@ -293,19 +293,19 @@ protected:
 protected:
     /// @brief Send a specific command to a specific inverter with a specific value.
     ///
-    /// @param command Command to send
-    /// @param value Value to send
     /// @param deviceID Recipient inverter identifier
-    void sendCommand(const Command command, const uint8_t value, const uint32_t deviceID);
+    /// @param command Command to send
+    /// @param value Optional value to send
+    void sendCommand(const uint32_t deviceID, const Command command, const uint8_t value = 0x00);
 
     /// @brief Send a specific command to a specific inverter with a specific value and validate the reply
     ///
-    /// @param command Command to send
-    /// @param value Value to send
     /// @param deviceID  Recipient inverter identifier
+    /// @param command Command to send
+    /// @param value Optional value to send
     /// @return true If command was sent and validated
     /// @return false not
-    bool sendCommandAndValidate(const Command command, const uint8_t value, const uint32_t deviceID);
+    bool sendCommandAndValidate(const uint32_t deviceID, const Command command, const uint8_t value = 0x00);
 
     /// @brief Wait for a message with a timeout of 1 second
     ///

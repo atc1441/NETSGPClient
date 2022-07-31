@@ -22,7 +22,7 @@ void AsyncNETSGPClient::update()
         {
             mLastSendMS = currentMillis;
             mLastUpdateMS = currentMillis;
-            sendCommand(Command::STATUS, 0x00, *mDeviceIte);
+            sendCommand(*mDeviceIte, Command::STATUS);
             DEBUGF("Sent STATUS request to %#08x\n", *mDeviceIte);
             mCanSend = false;
             ++mDeviceIte;
