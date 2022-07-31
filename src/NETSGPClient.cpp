@@ -203,18 +203,35 @@ bool NETSGPClient::findAndReadReply(const Command command)
         return false;
     }
 
+    size_t bytesToRead;
     switch (command)
     {
     case Command::STATUS:
         // whole message is 27 bytes
-        return mStream.readBytes(&mBuffer[2], 25) == 25;
+        bytesToRead = 25;
+        break;
     case Command::CONTROL:
     case Command::POWER_GRADE:
         // whole message is 16 bytes
-        return mStream.readBytes(&mBuffer[2], 14) == 14;
+        bytesToRead = 14;
+        break;
+    default:
+        bytesToRead = 0;
+        DEBUGLN("[findAndReadReply] Unknown command");
+        break;
     }
 
-    DEBUGLN("[findAndReadReply] Unknown command");
+    if (bytesToRead)
+    {
+        const size_t bytesRead = mStream.readBytes(&mBuffer[2], bytesToRead);
+        const bool success = bytesRead == bytesToRead;
+        if (!success)
+        {
+            DEBUGF("[findAndReadReply] Only read %d of %d bytes\n", bytesRead, bytesToRead);
+        }
+        return success;
+    }
+
     return false;
 }
 
