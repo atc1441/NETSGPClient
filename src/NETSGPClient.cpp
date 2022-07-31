@@ -12,7 +12,7 @@ NETSGPClient::~NETSGPClient() { }
 
 NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
-    sendCommand(Command::STATUS, 0x00, deviceID);
+    sendCommand(deviceID, Command::STATUS);
     InverterStatus status;
     if (waitForMessage() && findAndReadReply())
     {
@@ -34,17 +34,17 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 
 bool NETSGPClient::setPowerGrade(const uint32_t deviceID, const PowerGrade pg)
 {
-    return sendCommandAndValidate(Command::CONTROL, pg, deviceID);
+    return sendCommandAndValidate(deviceID, Command::CONTROL, pg);
 }
 
 bool NETSGPClient::activate(const uint32_t deviceID, const bool activate)
 {
-    return sendCommandAndValidate(Command::CONTROL, activate ? Control::ACTIVATE : Control::DEACTIVATE, deviceID);
+    return sendCommandAndValidate(deviceID, Command::CONTROL, activate ? Control::ACTIVATE : Control::DEACTIVATE);
 }
 
 bool NETSGPClient::reboot(const uint32_t deviceID)
 {
-    return sendCommandAndValidate(Command::CONTROL, Control::REBOOT, deviceID);
+    return sendCommandAndValidate(deviceID, Command::CONTROL, Control::REBOOT);
 }
 
 LC12S::Settings NETSGPClient::readRFModuleSettings()
@@ -143,7 +143,7 @@ bool NETSGPClient::setDefaultRFSettings()
     return true;
 }
 
-void NETSGPClient::sendCommand(const Command command, const uint8_t value, const uint32_t deviceID)
+void NETSGPClient::sendCommand(const uint32_t deviceID, const Command command, const uint8_t value)
 {
     uint8_t* bufferPointer = &mBuffer[0];
 
@@ -166,9 +166,9 @@ void NETSGPClient::sendCommand(const Command command, const uint8_t value, const
     mStream.write(&mBuffer[0], 15);
 }
 
-bool NETSGPClient::sendCommandAndValidate(const Command command, const uint8_t value, const uint32_t deviceID)
+bool NETSGPClient::sendCommandAndValidate(const uint32_t deviceID, const Command command, const uint8_t value)
 {
-    sendCommand(Command::CONTROL, value, deviceID);
+    sendCommand(deviceID, Command::CONTROL, value);
     if (waitForMessage() && findAndReadReply())
     {
 #ifdef DEBUG_SERIAL
@@ -178,7 +178,12 @@ bool NETSGPClient::sendCommandAndValidate(const Command command, const uint8_t v
         }
         DEBUGLN();
 #endif
-        return mBuffer[14] == calcCRC(14) && mBuffer[13] == value;
+        const bool crc = mBuffer[14] == calcCRC(14);
+        const bool valid = mBuffer[13] == value;
+
+        DEBUGF("[sendCommandAndValidate] CRC %s & value %s\n", crc ? "valid" : "invalid", valid ? "valid" : "invalid");
+
+        return crc && valid;
     }
 
     return false;
@@ -195,6 +200,7 @@ bool NETSGPClient::waitForMessage()
         }
         delay(1);
     }
+    DEBUGLN("[waitForMessage] Timeout");
     return false;
 }
 
@@ -203,11 +209,13 @@ bool NETSGPClient::findAndReadReply()
     // Search for a reply header consisting of magic byte and one of the command bytes
     if (!mStream.find(MAGIC_BYTE))
     {
+        DEBUGLN("[findAndReadReply] Could not find magic byte");
         return false;
     }
 
     size_t bytesToRead;
-    switch (mStream.read())
+    const uint8_t command = mStream.read();
+    switch (command)
     {
     case Command::STATUS:
         bytesToRead = 25; // whole message is 27 bytes
@@ -218,6 +226,7 @@ bool NETSGPClient::findAndReadReply()
         break;
     default:
         // technically we need to search for a magic byte again before we can say that no reply is found
+        DEBUGF("[findAndReadReply] Unexpected command 0x%02X", command);
         return false;
     }
 
@@ -267,7 +276,7 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
 
     status.valid = buffer[14] == calcCRC(14);
 
-    DEBUGF("CRC is %s\n", status.valid ? "valid" : "invalid");
+    DEBUGF("CRC %s\n", status.valid ? "valid" : "invalid");
 
     return status.valid;
 }
