@@ -212,8 +212,8 @@ bool NETSGPClient::findAndReadReply(const Command command)
         break;
     case Command::CONTROL:
     case Command::POWER_GRADE:
-        // whole message is 16 bytes
-        bytesToRead = 14;
+        // whole message is 15 bytes
+        bytesToRead = 13;
         break;
     default:
         bytesToRead = 0;
