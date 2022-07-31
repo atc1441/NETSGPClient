@@ -14,7 +14,7 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 {
     sendCommand(deviceID, Command::STATUS);
     InverterStatus status;
-    if (waitForMessage() && findAndReadReply())
+    if (waitForMessage() && findAndReadReply(Command::STATUS))
     {
 #ifdef DEBUG_SERIAL
         for (uint8_t i = 0; i < 32; i++)
@@ -168,8 +168,8 @@ void NETSGPClient::sendCommand(const uint32_t deviceID, const Command command, c
 
 bool NETSGPClient::sendCommandAndValidate(const uint32_t deviceID, const Command command, const uint8_t value)
 {
-    sendCommand(deviceID, Command::CONTROL, value);
-    if (waitForMessage() && findAndReadReply())
+    sendCommand(deviceID, command, value);
+    if (waitForMessage() && findAndReadReply(command))
     {
 #ifdef DEBUG_SERIAL
         for (uint8_t i = 0; i < 32; i++)
@@ -204,35 +204,28 @@ bool NETSGPClient::waitForMessage()
     return false;
 }
 
-bool NETSGPClient::findAndReadReply()
+bool NETSGPClient::findAndReadReply(const Command command)
 {
-    // as long as we have data for at least a control or power grade reply keep on looking
-    while (mStream.available() >= 16)
+    // Search for a reply header consisting of magic byte and one of the command bytes
+    const char header[2] = {MAGIC_BYTE, command};
+    if (!mStream.find(&header[0], 2))
     {
-        // Search for a reply header consisting of magic byte and one of the command bytes
-        if (!mStream.find(MAGIC_BYTE))
-        {
-            DEBUGLN("[findAndReadReply] Could not find magic byte");
-            return false;
-        }
-
-        const uint8_t command = mStream.read();
-        switch (command)
-        {
-        case Command::STATUS:
-            // whole message is 27 bytes
-            return mStream.readBytes(&mBuffer[2], 25) == 25;
-        case Command::CONTROL:
-        case Command::POWER_GRADE:
-            // whole message is 16 bytes
-            return mStream.readBytes(&mBuffer[2], 14) == 14;
-            // default:
-            //     // technically we need to search for a magic byte again before we can say that no reply is found
-            //     DEBUGF("[findAndReadReply] Unexpected command 0x%02X", command);
-            //     return false;
-        }
+        DEBUGLN("[findAndReadReply] Could not find header");
+        return false;
     }
-    DEBUGLN("[findAndReadReply] Could not find command");
+
+    switch (command)
+    {
+    case Command::STATUS:
+        // whole message is 27 bytes
+        return mStream.readBytes(&mBuffer[2], 25) == 25;
+    case Command::CONTROL:
+    case Command::POWER_GRADE:
+        // whole message is 16 bytes
+        return mStream.readBytes(&mBuffer[2], 14) == 14;
+    }
+
+    DEBUGLN("[findAndReadReply] Unknown command");
     return false;
 }
 
