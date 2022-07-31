@@ -315,9 +315,10 @@ protected:
 
     /// @brief Try to find a reply in the stream and if present read it into mBuffer
     ///
+    /// @param command Expected command of reply
     /// @return true If reply was found and read into mBuffer
     /// @return false If not
-    bool findAndReadReply();
+    bool findAndReadReply(const Command command);
 
     /// @brief Calculate the checksum for a message inside the buffer.
     ///
