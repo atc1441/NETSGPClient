@@ -16,13 +16,7 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
     InverterStatus status;
     if (waitForMessage() && findAndReadReply(Command::STATUS))
     {
-#ifdef DEBUG_SERIAL
-        for (uint8_t i = 0; i < 32; i++)
-        {
-            DEBUGF("%02X", mBuffer[i]);
-        }
-        DEBUGLN();
-#endif
+        dumpBuffer();
         fillInverterStatusFromBuffer(&mBuffer[0], status);
     }
     else
@@ -171,13 +165,8 @@ bool NETSGPClient::sendCommandAndValidate(const uint32_t deviceID, const Command
     sendCommand(deviceID, command, value);
     if (waitForMessage() && findAndReadReply(command))
     {
-#ifdef DEBUG_SERIAL
-        for (uint8_t i = 0; i < 32; i++)
-        {
-            DEBUGF("%02X", mBuffer[i]);
-        }
-        DEBUGLN();
-#endif
+        dumpBuffer();
+
         const bool crc = mBuffer[14] == calcCRC(14);
         const bool valid = mBuffer[13] == value;
 
@@ -275,4 +264,15 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
     DEBUGF("CRC %s\n", status.valid ? "valid" : "invalid");
 
     return status.valid;
+}
+
+void NETSGPClient::dumpBuffer()
+{
+#ifdef DEBUG_SERIAL
+    for (uint8_t i = 0; i < 32; ++i)
+    {
+        DEBUGF("%02X", mBuffer[i]);
+    }
+    DEBUGLN();
+#endif
 }

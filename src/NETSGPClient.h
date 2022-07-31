@@ -344,6 +344,9 @@ protected:
     /// @return false If checksum is invalid
     bool fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
 
+    /// @brief Dump the buffer contents to debug serial
+    void dumpBuffer();
+
 protected:
     constexpr static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
     Stream& mStream; /// Stream for communication
