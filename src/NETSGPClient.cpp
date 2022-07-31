@@ -16,7 +16,6 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
     InverterStatus status;
     if (waitForMessage() && findAndReadReply(Command::STATUS))
     {
-        dumpBuffer();
         fillInverterStatusFromBuffer(&mBuffer[0], status);
     }
     else
@@ -165,8 +164,6 @@ bool NETSGPClient::sendCommandAndValidate(const uint32_t deviceID, const Command
     sendCommand(deviceID, command, value);
     if (waitForMessage() && findAndReadReply(command))
     {
-        dumpBuffer();
-
         const bool crc = mBuffer[14] == calcCRC(14);
         const bool valid = mBuffer[13] == value;
 
@@ -224,12 +221,8 @@ bool NETSGPClient::findAndReadReply(const Command command)
     if (bytesToRead)
     {
         const size_t bytesRead = mStream.readBytes(&mBuffer[2], bytesToRead);
-        const bool success = bytesRead == bytesToRead;
-        if (!success)
-        {
-            DEBUGF("[findAndReadReply] Only read %d of %d bytes\n", bytesRead, bytesToRead);
-        }
-        return success;
+        dumpBuffer(2 + bytesRead);
+        return bytesRead == bytesToRead;
     }
 
     return false;
@@ -283,13 +276,16 @@ bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterS
     return status.valid;
 }
 
-void NETSGPClient::dumpBuffer()
+void NETSGPClient::dumpBuffer(const size_t bytes)
 {
 #ifdef DEBUG_SERIAL
-    for (uint8_t i = 0; i < 32; ++i)
+    if (bytes <= BUFFER_SIZE)
     {
-        DEBUGF("%02X", mBuffer[i]);
+        for (uint8_t i = 0; i < bytes; ++i)
+        {
+            DEBUGF("%02X", mBuffer[i]);
+        }
+        DEBUGLN();
     }
-    DEBUGLN();
 #endif
 }

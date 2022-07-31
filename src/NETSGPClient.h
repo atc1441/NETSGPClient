@@ -345,11 +345,14 @@ protected:
     bool fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status);
 
     /// @brief Dump the buffer contents to debug serial
-    void dumpBuffer();
+    ///
+    /// @param bytes Amount of bytes to dump
+    void dumpBuffer(const size_t bytes = BUFFER_SIZE);
 
 protected:
+    constexpr static const size_t BUFFER_SIZE = 32;
     constexpr static const uint8_t MAGIC_BYTE = 0x43; /// Magic byte indicating start of messages
     Stream& mStream; /// Stream for communication
     uint8_t mProgPin; /// Programming enable pin of RF module (active low)
-    uint8_t mBuffer[32] = {0}; /// Inernal buffer
+    uint8_t mBuffer[BUFFER_SIZE] = {0}; /// Inernal buffer
 };
