@@ -37,16 +37,10 @@ void AsyncNETSGPClient::update()
     // Check for answers
     while (mStream.available() >= 27)
     {
-        // Search for a read status message
+        // Search for status message
         if (findAndReadReply(Command::STATUS))
         {
-#ifdef DEBUG_SERIAL
-            for (uint8_t i = 0; i < 32; i++)
-            {
-                DEBUGF("%02X", mBuffer[i]);
-            }
-            DEBUGLN();
-#endif
+            dumpBuffer();
             InverterStatus status;
             if (fillInverterStatusFromBuffer(&mBuffer[0], status))
             {
