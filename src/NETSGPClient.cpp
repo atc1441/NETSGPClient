@@ -27,7 +27,7 @@ NETSGPClient::InverterStatus NETSGPClient::getStatus(const uint32_t deviceID)
 
 bool NETSGPClient::setPowerGrade(const uint32_t deviceID, const PowerGrade pg)
 {
-    return sendCommandAndValidate(deviceID, Command::CONTROL, pg);
+    return sendCommandAndValidate(deviceID, Command::POWER_GRADE, pg);
 }
 
 bool NETSGPClient::activate(const uint32_t deviceID, const bool activate)
