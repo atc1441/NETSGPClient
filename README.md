@@ -60,7 +60,7 @@ You can find an overview of all devices and their datasheets [here](http://newen
 | `SG1200MT`     | :x:                | :grey_question:    | 1.2kW model | :grey_question:  |
 | `SG1200HT`     | :x:                | :grey_question:    | 1.2kW model | :grey_question:  |
 | `SG1200MQ`     | :x:                | :grey_question:    | 1.2kW model | 52000001         |
-| `SG1400MQ`     | :x:                | :grey_question:    | 1.4kW model | :grey_question:  |
+| `SG1400MQ`     | :white_check_mark: | :white_check_mark: | 1.4kW model | :grey_question:  |
 | `SG1400HQ`     | :x:                | :grey_question:    | 1.4kW model | :grey_question:  |
 
 ### Model number explanation
