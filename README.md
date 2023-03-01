@@ -46,7 +46,7 @@ You can find an overview of all devices and their datasheets [here](http://newen
 | `SG500HS`      | :x:                | :grey_question:    | 500W model  | :grey_question:  |
 | `SG500MD`      | :white_check_mark: | :white_check_mark: | 500W model  | 34000001         |
 | `SG500TD`      | :x:                | :grey_question:    | 500W model  | :grey_question:  |
-| `SG600MD`      | :x:                | :grey_question:    | 600W model  | 38000001         |
+| `SG600MD`      | :white_check_mark: | :white_check_mark: | 600W model  | 38000001         |
 | `SG600HD`      | :x:                | :grey_question:    | 600W model  | :grey_question:  |
 | `SG600TD`      | :x:                | :grey_question:    | 600W model  | :grey_question:  |
 | `SG700MD`      | :white_check_mark: | :white_check_mark: | 700W model  | 41000001         |
