@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <set>
 
 #include "NETSGPClient.h"
@@ -7,8 +8,9 @@
 /// @brief Async version of NETSGPClient
 class AsyncNETSGPClient : public NETSGPClient
 {
+public:
     /// @brief Callback function type definition for inverter status updates
-    typedef void (*InverterStatusCallback)(const NETSGPClient::InverterStatus&);
+    typedef std::function<void(const NETSGPClient::InverterStatus&)> InverterStatusCallback;
 
 public:
     /// @brief Construct a new AsyncNETSGPClient object.
