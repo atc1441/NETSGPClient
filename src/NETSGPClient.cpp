@@ -247,7 +247,6 @@ void NETSGPClient::enableProgramming()
 void NETSGPClient::disableProgramming()
 {
     digitalWrite(mProgPin, HIGH);
-    delay(10);
 }
 
 bool NETSGPClient::fillInverterStatusFromBuffer(const uint8_t* buffer, InverterStatus& status)
