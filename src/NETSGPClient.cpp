@@ -196,6 +196,11 @@ bool NETSGPClient::findAndReadReply(const Command command)
     const char header[2] = {MAGIC_BYTE, command};
     if (!mStream.find(&header[0], 2))
     {
+        // Dump remaining data
+        while (mStream.read() >= 0)
+        {
+            delay(0);
+        }
         DEBUGLN("[findAndReadReply] Could not find header");
         return false;
     }
